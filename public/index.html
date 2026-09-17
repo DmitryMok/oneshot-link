@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1qaz — Send Link Between Devices Instantly | No Registration</title>
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#3b82f6">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/favicon.ico">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="description" content="Send links between devices instantly with a 4-digit PIN. No registration, no app — works on any device in seconds.">
+    <link rel="canonical" href="https://1qaz.diworld.pro/">
+    <link rel="alternate" hreflang="ru" href="https://1qaz.diworld.pro/">
+    <link rel="alternate" hreflang="x-default" href="https://1qaz.diworld.pro/">
+    <style>
+        :root {
+            --bg: #f5f7fa;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --surface: #ffffff;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --radius: 12px;
+        }
+        * { box-sizing: border-box; font-family: system-ui, -apple-system, sans-serif; }
+        body { background-color: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        .container { display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 900px; margin-top: 40px; }
+        @media (min-width: 768px) { .container { flex-direction: row; align-items: stretch; } }
+        @media (max-width: 480px) { .btn-label { display: none; } }
+        .card { background: var(--surface); padding: 30px; border-radius: var(--radius); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); flex: 1; display: flex; flex-direction: column; }
+        h2 { margin-top: 0; font-size: 1.5rem; text-align: center; }
+        input[type="text"] { width: 100%; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 15px; font-size: 1rem; }
+        button { background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 8px; font-size: 1rem; cursor: pointer; transition: background 0.2s; width: 100%; margin-bottom: 10px; font-weight: 500; }
+        button:hover { background: var(--primary-hover); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        button:disabled:hover { background: var(--primary); }
+        button.secondary { background: #e5e7eb; color: var(--text); }
+        button.secondary:hover { background: #d1d5db; }
+        button.secondary:disabled:hover { background: #e5e7eb; }
+        .pin-display { font-size: 3rem; font-family: monospace; text-align: center; margin: 20px 0; letter-spacing: 5px; cursor: pointer; transition: opacity 0.15s; }
+        .pin-display:hover { opacity: 0.75; }
+        .pin-input { font-size: 2rem; text-align: center; letter-spacing: 10px; font-family: monospace; }
+        .keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 20px; }
+        .keypad button { font-size: 1.5rem; padding: 15px; margin: 0; background: var(--bg); color: var(--text); }
+        .keypad button:active { background: #e5e7eb; }
+        @media (hover: hover) {
+            .keypad button:hover { background: #e5e7eb; }
+        }
+        .keypad button.backspace { font-size: 1.3rem; color: var(--text-light); }
+        .footer { margin-top: auto; padding: 20px; text-align: center; color: var(--text-light); font-size: 0.875rem; }
+        .footer-links { margin-top: 10px; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 16px; font-size: 0.8rem; }
+        .footer-links a { color: var(--text-light); text-decoration: none; }
+        .footer-links a:hover { text-decoration: underline; }
+        #notificationArea { text-align: center; margin-top: 10px; min-height: 20px; }
+        .notif-done { display: inline-flex; align-items: center; gap: 8px; background: #d1fae5; color: #065f46; font-weight: 600; padding: 8px 16px; border-radius: 20px; font-size: 0.95rem; }
+        .notif-done.clickable { cursor: pointer; transition: background 0.2s; }
+        .notif-done.clickable:hover { background: #a7f3d0; }
+        .notif-done svg { flex-shrink: 0; }
+        .error { color: #ef4444; text-align: center; margin-bottom: 10px; min-height: 20px; }
+        .success-link { word-break: break-all; margin: 10px 0 0; padding: 15px; background: var(--bg); border-radius: 8px; display: none; }
+        .pin-qr-row { display: flex; align-items: center; justify-content: center; gap: 24px; flex-wrap: wrap; margin: 4px 0; }
+        .qr-box { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+        .qr-box img { width: 148px; height: 148px; border-radius: 10px; padding: 8px; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.10); display: block; }
+        .qr-hint { color: var(--text-light); font-size: 0.75rem; margin: 0; text-align: center; }
+        #timerWrapper { text-align: center; margin-top: 6px; }
+        @keyframes hint-appear { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+        .desktop-hint { display: none; margin-top: 14px; color: #4b5563; font-size: 0.88rem; line-height: 1.55; text-align: center; border-top: 1px dashed #e5e7eb; padding-top: 12px; }
+        .desktop-hint.visible { animation: hint-appear 0.5s ease forwards; }
+        @media (min-width: 768px) { .desktop-hint { display: block; } }
+        .viral-hint { display: inline-flex; align-items: center; gap: 6px; color: var(--text-light); font-size: 0.82rem; padding: 6px 14px; border-radius: 20px; border: 1px dashed #d1d5db; cursor: pointer; transition: background 0.2s, border-color 0.2s, color 0.2s; user-select: none; margin-top: 10px; }
+        .viral-hint:hover { background: #eef2ff; border-color: var(--primary); color: var(--primary); }
+        .viral-hint.copied { background: #d1fae5; border-color: #10b981; color: #065f46; transition: none; }
+        .timer { display: inline-block; color: var(--text-light); font-size: 0.85rem; padding: 5px 12px; border-radius: 6px; cursor: pointer; transition: background 0.2s, color 0.2s; user-select: none; }
+        .timer:hover { background: #eef2ff; color: var(--primary); }
+        .timer.expired { cursor: default; color: #ef4444; }
+        .timer.expired:hover { background: transparent; color: #ef4444; }
+    </style>
+</head>
+<body>
+
+<!-- Yandex.Metrika counter -->
+<script type="text/javascript">
+    (function(m,e,t,r,i,k,a){
+        m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+        m[i].l=1*new Date();
+        for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+        k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+    })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=108050204', 'ym');
+    ym(108050204, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
+</script>
+<noscript><div><img src="https://mc.yandex.ru/watch/108050204" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+<!-- /Yandex.Metrika counter -->
+
+<div class="container">
+    <!-- Send -->
+    <div class="card">
+        <h2 data-i18n="sendTitle">Отправить</h2>
+        <input type="text" id="urlInput" data-i18n-ph="urlPlaceholder" placeholder="Ссылка или текст…">
+        <button id="pasteBtn" class="secondary" onclick="pasteFromClipboard()" data-i18n="pasteBtn" disabled>Вставить из буфера</button>
+        <button onclick="sendLink()" id="sendBtn" data-i18n="sendBtn">Сгенерировать код</button>
+        <div id="sendError" class="error"></div>
+
+        <div id="sendResult" style="display:none; text-align: center;">
+            <p id="yourCodeLabel" style="margin-bottom: 4px;" data-i18n="yourCode">Ваш код:</p>
+
+            <div class="pin-qr-row">
+                <!-- PIN -->
+                <div>
+                    <div class="pin-display" id="generatedPin" onclick="copyPin()" data-i18n-title="clickToCopy"></div>
+                    <p id="clickToCopyHint" style="color: var(--text-light); font-size: 0.85rem; margin: 0;" data-i18n="clickToCopy">Нажмите на код, чтобы скопировать</p>
+                </div>
+                <!-- QR -->
+                <div class="qr-box" id="qrWrapper" style="display:none;">
+                    <img id="qrImg" src="" alt="QR">
+                    <p class="qr-hint" data-i18n="qrHint">Сканируй камерой для открытия</p>
+                </div>
+            </div>
+
+            <!-- Виральная строка: подсказка куда идти получателю кода -->
+            <div id="viralLine" style="display:none; text-align:center;">
+                <p style="margin:4px 0 6px; color:var(--text-light); font-size:0.85rem;" data-i18n="orLabel">или:</p>
+                <span class="viral-hint" id="viralChip" onclick="copyViralMessage()">
+                    <span id="viralChipText"></span>
+                    <span style="opacity:0.5; font-size:0.9em;">⎘</span>
+                </span>
+            </div>
+
+            <div id="notificationArea"></div>
+            <div id="timerWrapper">
+                <span class="timer" id="timerDisplay" onclick="deleteLink()"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Receive -->
+    <div class="card">
+        <h2 data-i18n="receiveTitle">Получить ссылку</h2>
+        <input type="text" id="pinInput" class="pin-input" placeholder="_ _ _ _" maxlength="5" readonly>
+
+        <div class="keypad">
+            <button onclick="typePin(1)">1</button>
+            <button onclick="typePin(2)">2</button>
+            <button onclick="typePin(3)">3</button>
+            <button onclick="typePin(4)">4</button>
+            <button onclick="typePin(5)">5</button>
+            <button onclick="typePin(6)">6</button>
+            <button onclick="typePin(7)">7</button>
+            <button onclick="typePin(8)">8</button>
+            <button onclick="typePin(9)">9</button>
+            <button onclick="clearPin()">C</button>
+            <button onclick="typePin(0)">0</button>
+            <button class="backspace" onclick="deleteLastPin()">⌫</button>
+        </div>
+
+        <p id="desktopHint" class="desktop-hint"></p>
+        <div id="receiveError" class="error"></div>
+
+        <div id="successArea" class="success-link">
+            <p style="margin-top:0;" id="receivedLabel"></p>
+            <a id="receivedLink" href="#" target="_blank" style="color: var(--primary); display:none; word-break:break-all;"></a>
+            <p id="receivedText" style="margin:0; white-space:pre-wrap; word-break:break-all; display:none;"></p>
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button id="openBtn" onclick="openReceivedContent()" data-i18n="openBtn">Открыть</button>
+                <button id="copyBtn" class="secondary" onclick="copyReceivedContent()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                    <span class="btn-label" data-i18n="copyBtn">Скопировать</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="footer" data-i18n="footer">Ссылки временные и автоматически удаляются через 10 минут.</div>
+<nav class="footer-links">
+  <a href="/send-link-phone-to-pc">Phone → PC</a>
+  <a href="/send-link-pc-to-phone">PC → Phone</a>
+  <a href="/open-link-on-tv">Open on TV</a>
+  <a href="/transfer-link-between-devices">Transfer between devices</a>
+  <a href="/share-link-to-another-browser">Share between browsers</a>
+</nav>
+
+<script>
+    // ── Локализация ───────────────────────────────────────────────────────────
+    const langs = navigator.languages?.length ? navigator.languages : [navigator.language || 'en'];
+    const lang = langs.some(l => l.toLowerCase().startsWith('ru')) ? 'ru' : 'en';
+    document.documentElement.lang = lang;
+
+    const TRANSLATIONS = {
+        ru: {
+            sendTitle:      'Отправить ссылку',
+            urlPlaceholder: 'Ссылка или текст…',
+            pasteBtn:       'Вставить из буфера',
+            sendBtn:        'Сгенерировать код',
+            sendBtnLoading: 'Загрузка…',
+            yourCode:       'Ваш код:',
+            clickToCopy:    'Нажмите на код, чтобы скопировать',
+            qrHint:         'Сканируй камерой для открытия',
+            orLabel:        'или:',
+            receiveTitle:   'Получить по коду',
+            openBtn:        'Открыть',
+            copyBtn:        'Скопировать',
+            footer:         'Ссылки временные и автоматически удаляются через 10 минут.',
+            errorEmpty:     'Введите ссылку или текст',
+            clipboardDenied:'Нет доступа к буферу обмена. Вставьте ссылку вручную.',
+            copyFailed:     'Не удалось скопировать',
+            timerRunning:   (m, s) => `Ссылка удалится через ${m}:${s}`,
+            timerExpired:   'Ссылка удалена',
+            timerDeleteHint:'Нажмите, чтобы удалить ссылку',
+            deleteConfirm:  'Удалить ссылку? Никто больше не сможет её получить.',
+            deleteFailed:   'Не удалось удалить: ',
+            labelLink:      '<b>Ссылка получена:</b>',
+            labelText:      '<b>Текст получен:</b>',
+            copied:         'Скопировано!',
+            linkOpened:     (time) => `Ссылка получена! ${time}`,
+            linkOpenedHint: 'Нажмите, чтобы удалить ссылку с сервера',
+            desktopHint:    'На другом устройстве откройте 1qaz.su и введите код — ссылка откроется мгновенно.',
+            viralChip:      (host, pin) => `Открой ${host} → введи код ${pin}`,
+            viralMsg:       (host, pin) => `Открой ${host} и введи код: ${pin}`,
+            viralCopied:    'Скопировано!',
+        },
+        en: {
+            sendTitle:      'Send a link',
+            urlPlaceholder: 'Link or text…',
+            pasteBtn:       'Paste from clipboard',
+            sendBtn:        'Generate code',
+            sendBtnLoading: 'Loading…',
+            yourCode:       'Your code:',
+            clickToCopy:    'Click the code to copy',
+            qrHint:         'Scan with camera to open',
+            orLabel:        'or:',
+            receiveTitle:   'Receive by code',
+            openBtn:        'Open',
+            copyBtn:        'Copy',
+            footer:         'Links are temporary and automatically deleted after 10 minutes.',
+            errorEmpty:     'Enter a link or text',
+            clipboardDenied:'Clipboard access denied. Please paste manually.',
+            copyFailed:     'Could not copy',
+            timerRunning:   (m, s) => `Expires in ${m}:${s}`,
+            timerExpired:   'Link deleted',
+            timerDeleteHint:'Click to delete link',
+            deleteConfirm:  'Delete the link? No one will be able to retrieve it.',
+            deleteFailed:   'Could not delete: ',
+            labelLink:      '<b>Link received:</b>',
+            labelText:      '<b>Text received:</b>',
+            copied:         'Copied!',
+            linkOpened:     (time) => `Link received! ${time}`,
+            linkOpenedHint: 'Click to delete link from server',
+            desktopHint:    'On another device, open 1qaz.su and enter this code — the link will open instantly.',
+            viralChip:      (host, pin) => `Open ${host} → enter code ${pin}`,
+            viralMsg:       (host, pin) => `Go to ${host} and enter code: ${pin}`,
+            viralCopied:    'Copied!',
+        }
+    };
+    const t = TRANSLATIONS[lang];
+
+    // Применяем переводы к статичным элементам
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+        el.textContent = t[el.dataset.i18n] ?? el.textContent;
+    });
+    document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+        el.placeholder = t[el.dataset.i18nPh] ?? el.placeholder;
+    });
+    document.querySelectorAll('[data-i18n-title]').forEach(el => {
+        el.title = t[el.dataset.i18nTitle] ?? el.title;
+    });
+
+    // ── PWA: Service Worker ───────────────────────────────────────────────────
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(regs => {
+            regs.forEach(r => r.update());
+        });
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+
+    // ── PWA: Share Target — подхватываем URL из Android "Поделиться" ─────────
+    (function handleShareTarget() {
+        const p = new URLSearchParams(window.location.search);
+        const shared = (p.get('url') || p.get('text') || p.get('title') || '').trim();
+        if (shared) {
+            document.getElementById('urlInput').value = shared;
+            history.replaceState({}, '', '/'); // убираем параметры из адресной строки
+        } else {
+            document.getElementById('urlInput').focus();
+        }
+    })();
+
+    // ── Состояние ─────────────────────────────────────────────────────────────
+    const sessionId = Math.random().toString(36).substring(2, 15);
+    let receivedContent = '';
+    let currentPin = null;
+    let activeUrl = null;
+    let countdownEnd = null;
+    let countdownInterval = null;
+    let currentPinLength = 4;
+
+    function isUrl(str) {
+        return /^[a-z][a-z0-9+\-.]*:\/\//i.test(str);
+    }
+
+    fetch('/api/config')
+        .then(r => r.json())
+        .then(d => { currentPinLength = d.pinLength; })
+        .catch(() => {});
+
+    // ── Polling: проверяем открыта ли ссылка ─────────────────────────────────
+    let pollInterval = null;
+    function startPolling(pin) {
+        stopPolling();
+        pollInterval = setInterval(async () => {
+            try {
+                const r = await fetch(`/api/status/${pin}?sessionId=${sessionId}`);
+                const d = await r.json();
+                if (d.status === 'opened') {
+                    document.getElementById('notificationArea').innerHTML =
+                        `<span class="notif-done clickable" title="${t.linkOpenedHint}" onclick="deleteCurrentLink()"><svg width="20" height="20" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="10" fill="#10b981"/><path d="M5.5 10.5l3 3 6-6" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>${t.linkOpened(d.openedAt || '')}</span>`;
+                    stopPolling();
+                } else if (d.status === 'expired' || d.status === 'unknown') {
+                    stopPolling();
+                }
+            } catch {}
+        }, 3000);
+    }
+    function stopPolling() {
+        if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+    }
+
+    // ── Кнопка вставки из буфера ──────────────────────────────────────────────
+    const pasteBtn = document.getElementById('pasteBtn');
+
+    async function updatePasteBtn() {
+        if (!navigator.clipboard?.readText) { pasteBtn.disabled = false; return; }
+        try {
+            const perm = await navigator.permissions.query({ name: 'clipboard-read' });
+            if (perm.state === 'granted') {
+                const text = await navigator.clipboard.readText();
+                pasteBtn.disabled = !text.trim();
+            } else {
+                pasteBtn.disabled = false;
+            }
+        } catch {
+            pasteBtn.disabled = false;
+        }
+    }
+
+    updatePasteBtn();
+    window.addEventListener('focus', updatePasteBtn);
+
+    async function pasteFromClipboard() {
+        try {
+            const text = await navigator.clipboard.readText();
+            document.getElementById('urlInput').value = text;
+            updatePasteBtn();
+        } catch {
+            alert(t.clipboardDenied);
+            pasteBtn.disabled = false;
+        }
+    }
+
+    // ── Общая функция удаления ссылки ─────────────────────────────────────────
+    async function deleteCurrentLink() {
+        if (!currentPin) return;
+        try {
+            await fetch(`/api/link/${currentPin}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sessionId })
+            });
+        } catch {}
+        currentPin = null;
+        activeUrl = null;
+        stopPolling();
+        if (countdownInterval) clearInterval(countdownInterval);
+        const timerEl = document.getElementById('timerDisplay');
+        timerEl.textContent = t.timerExpired;
+        timerEl.classList.add('expired');
+        timerEl.style.cursor = 'default';
+    }
+
+    // ── Отправка ──────────────────────────────────────────────────────────────
+    async function sendLink() {
+        const url = document.getElementById('urlInput').value.trim();
+        const errDiv = document.getElementById('sendError');
+        errDiv.innerText = '';
+
+        if (!url) return (errDiv.innerText = t.errorEmpty);
+
+        // Если PIN активен и URL не менялся — просто продлеваем таймер
+        const pinActive = currentPin && countdownEnd && countdownEnd - Date.now() > 0;
+        if (pinActive && url === activeUrl) {
+            const btn = document.getElementById('sendBtn');
+            btn.innerText = t.sendBtnLoading;
+            btn.disabled = true;
+            try {
+                const res = await fetch('/api/refresh', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ pin: currentPin, sessionId })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error);
+                startCountdown(data.expiresAt);
+                document.getElementById('notificationArea').innerText = '';
+                startPolling(currentPin);
+            } catch (err) {
+                errDiv.innerText = err.message;
+            } finally {
+                btn.innerText = t.sendBtn;
+                btn.disabled = false;
+            }
+            return;
+        }
+
+        const btn = document.getElementById('sendBtn');
+        btn.innerText = t.sendBtnLoading;
+        btn.disabled = true;
+
+        try {
+            const res = await fetch('/api/create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url, sessionId, uiLang: lang, browserLang: navigator.language })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+
+            currentPin = data.pin;
+            activeUrl = url;
+            document.getElementById('sendResult').style.display = 'block';
+            document.getElementById('generatedPin').innerText = data.pin;
+            document.getElementById('notificationArea').innerText = '';
+            const hintEl = document.getElementById('desktopHint');
+            hintEl.textContent = t.desktopHint;
+            hintEl.classList.remove('visible');
+            void hintEl.offsetWidth; // reflow для перезапуска анимации
+            hintEl.classList.add('visible');
+            startCountdown(data.expiresAt);
+            startPolling(data.pin);
+
+            // Виральная строка
+            const host = '1qaz.su';
+            document.getElementById('viralChipText').textContent = t.viralChip(host, data.pin);
+            document.getElementById('viralLine').style.display = 'block';
+
+            // QR
+            const qrWrapper = document.getElementById('qrWrapper');
+            const qrImg     = document.getElementById('qrImg');
+            if (data.qr) {
+                qrImg.src = data.qr;
+                qrWrapper.style.display = 'flex';
+            } else {
+                qrWrapper.style.display = 'none';
+            }
+        } catch (err) {
+            errDiv.innerText = err.message;
+        } finally {
+            btn.innerText = t.sendBtn;
+            btn.disabled = false;
+        }
+    }
+
+    function copyViralMessage() {
+        if (!currentPin) return;
+        const host = '1qaz.su';
+        const msg  = t.viralMsg(host, currentPin);
+        navigator.clipboard.writeText(msg).then(() => {
+            const chip = document.getElementById('viralChip');
+            chip.classList.add('copied');
+            const orig = document.getElementById('viralChipText').textContent;
+            document.getElementById('viralChipText').textContent = t.viralCopied;
+            setTimeout(() => {
+                chip.classList.remove('copied');
+                document.getElementById('viralChipText').textContent = orig;
+            }, 1500);
+        }).catch(() => {});
+    }
+
+    function copyPin() {
+        const pin = document.getElementById('generatedPin').innerText;
+        navigator.clipboard.writeText(pin).then(() => {
+            const el = document.getElementById('generatedPin');
+            el.innerText = '✓';
+            setTimeout(() => el.innerText = pin, 800);
+        }).catch(() => alert(t.copyFailed));
+    }
+
+    // ── Таймер ────────────────────────────────────────────────────────────────
+    function startCountdown(endTime) {
+        countdownEnd = endTime;
+        if (countdownInterval) clearInterval(countdownInterval);
+        const timerEl = document.getElementById('timerDisplay');
+        timerEl.classList.remove('expired');
+        timerEl.style.cursor = 'pointer';
+        timerEl.title = t.timerDeleteHint;
+        updateTimerDisplay();
+        countdownInterval = setInterval(updateTimerDisplay, 1000);
+    }
+
+    function updateTimerDisplay() {
+        const timerEl = document.getElementById('timerDisplay');
+        const remaining = countdownEnd - Date.now();
+        if (remaining <= 0) {
+            clearInterval(countdownInterval);
+            timerEl.textContent = t.timerExpired;
+            timerEl.classList.add('expired');
+            stopPolling();
+            return;
+        }
+        const mins = Math.floor(remaining / 60000);
+        const secs = Math.floor((remaining % 60000) / 1000);
+        timerEl.textContent = t.timerRunning(mins, secs.toString().padStart(2, '0'));
+    }
+
+    async function deleteLink() {
+        if (!currentPin || (countdownEnd && countdownEnd - Date.now() <= 0)) return;
+        if (!confirm(t.deleteConfirm)) return;
+        await deleteCurrentLink();
+    }
+
+    // ── Получение ─────────────────────────────────────────────────────────────
+    const pinInput = document.getElementById('pinInput');
+    const urlInput = document.getElementById('urlInput');
+
+    document.addEventListener('keydown', (e) => {
+        if (document.activeElement === urlInput) return;
+        if (e.key >= '0' && e.key <= '9') typePin(e.key);
+        if (e.key === 'Backspace') deleteLastPin();
+    });
+
+    function typePin(num) {
+        if (pinInput.value.length < currentPinLength) {
+            pinInput.value += num;
+            if (pinInput.value.length === currentPinLength) submitPin();
+        }
+    }
+
+    function deleteLastPin() {
+        pinInput.value = pinInput.value.slice(0, -1);
+        document.getElementById('receiveError').innerText = '';
+    }
+
+    function clearPin() {
+        pinInput.value = '';
+        document.getElementById('receiveError').innerText = '';
+        document.getElementById('successArea').style.display = 'none';
+    }
+
+    async function submitPin() {
+        const pin = pinInput.value;
+        const errDiv = document.getElementById('receiveError');
+        const successArea = document.getElementById('successArea');
+        errDiv.innerText = '';
+        successArea.style.display = 'none';
+
+        try {
+            const res = await fetch(`/api/link/${pin}`);
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error);
+
+            receivedContent = data.url;
+            const linkEl  = document.getElementById('receivedLink');
+            const textEl  = document.getElementById('receivedText');
+            const openBtn = document.getElementById('openBtn');
+            const label   = document.getElementById('receivedLabel');
+
+            if (isUrl(receivedContent)) {
+                linkEl.textContent = receivedContent;
+                linkEl.href = receivedContent;
+                linkEl.style.display = '';
+                textEl.style.display = 'none';
+                openBtn.style.display = '';
+                label.innerHTML = t.labelLink;
+            } else {
+                textEl.textContent = receivedContent;
+                textEl.style.display = '';
+                linkEl.style.display = 'none';
+                openBtn.style.display = 'none';
+                label.innerHTML = t.labelText;
+            }
+
+            const hint = document.getElementById('desktopHint');
+            hint.textContent = '';
+            hint.classList.remove('visible');
+            successArea.style.display = 'block';
+            successArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            pinInput.value = '';
+        } catch (err) {
+            errDiv.innerText = err.message;
+            const hint = document.getElementById('desktopHint');
+            hint.textContent = '';
+            hint.classList.remove('visible');
+        }
+    }
+
+    function openReceivedContent() {
+        if (receivedContent) window.open(receivedContent, '_blank', 'noopener,noreferrer');
+    }
+
+    function copyReceivedContent() {
+        if (receivedContent) navigator.clipboard.writeText(receivedContent).then(() => alert(t.copied));
+    }
+</script>
+</body>
+</html>

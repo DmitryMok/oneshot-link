@@ -1,0 +1,26 @@
+{
+  "name": "1qaz — передача ссылок",
+  "short_name": "1qaz",
+  "description": "Передавай ссылки между устройствами мгновенно по PIN-коду",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f5f7fa",
+  "theme_color": "#3b82f6",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "share_target": {
+    "action": "/",
+    "method": "GET",
+    "params": {
+      "url":   "url",
+      "text":  "text",
+      "title": "title"
+    }
+  }
+}
